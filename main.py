@@ -5,13 +5,13 @@ from transport.Train import Train
 from transport.TransportCompany import TransportCompany
 import json
 
-
 def load_data_from_json():
     try:
         with open("dump.json", "r", encoding="utf-8") as file:
             return json.load(file)
     except FileNotFoundError:
-        return [] # если файл отсутствует, возвращаем пустой список
+        return []
+
 
 def save_data_to_json(data):
     with open("dump.json", "w", encoding="utf-8") as file:
@@ -284,6 +284,8 @@ while status:
 
                     elif u == 3:
                         break
+            elif e == 3:
+                break
 
     elif a == 3:
         print("----------Распределение грузов----------")
