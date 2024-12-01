@@ -11,10 +11,7 @@ def load_data_from_json():
         with open("dump.json", "r", encoding="utf-8") as file:
             return json.load(file)
     except FileNotFoundError:
-        return []  # Если файл отсутствует, возвращаем пустой список
-    except json.JSONDecodeError:
-        return []  # Если файл пустой или поврежден, возвращаем пустой список
-
+        return [] # если файл отсутствует, возвращаем пустой список
 
 def save_data_to_json(data):
     with open("dump.json", "w", encoding="utf-8") as file:
