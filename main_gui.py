@@ -1,5 +1,3 @@
-# доработать код так, чтобы при добавлении транспорта в таблицу и выхода из окна, транспорт сохранялся в таблице. Если пользователь выбирает Грузовик, то ему не нужно вводить количество вагонов, а если поезд, то не нужно цвет. Оформить окно распределения грузов.
-
 import tkinter as tk
 import json
 from tkinter import messagebox, ttk
@@ -267,7 +265,7 @@ class TransportCompanyApp:
 
         tk.Button(self.transport_window, text="Сохранить", command=self.save_transport).grid(row=4, column=0)
 
-    def on_transport_type_selected(self):
+    def on_transport_type_selected(self, event):
         transport_type = self.transport_type.get()
         if transport_type == "Поезд":
             self.color_label.grid_remove()
@@ -286,27 +284,34 @@ class TransportCompanyApp:
         color = self.color_entry.get()
         number_of_cars = self.cars_entry.get()
 
-        if not capacity.isdigit() or not int(capacity) or not float(capacity):
+        try:
+            capacity = float(capacity)
+            if capacity <= 0:
+                raise ValueError
+        except ValueError:
             messagebox.showerror("Ошибка", "Грузоподъемность должна быть положительным числом.")
             return
 
         if transport_type == "Грузовик":
-            color = self.color_entry.get()
             if color.strip() == "":
                 messagebox.showerror("Ошибка", "Цвет не может быть пустым.")
                 return
             self.transport_table.insert("", "end", values=(len(self.transport_table.get_children()) + 1, transport_type, capacity, color))
             self.company.add_vehicle(Truck(capacity, color))
         elif transport_type == "Поезд":
-            number_of_cars = self.cars_entry.get()
-            if not number_of_cars.isdigit() or int(number_of_cars) <= 0:
+            try:
+                number_of_cars = int(number_of_cars)
+                if number_of_cars <= 0:
+                    raise ValueError
+            except ValueError:
                 messagebox.showerror("Ошибка", "Количество вагонов должно быть положительным числом.")
                 return
             
             self.transport_table.insert("", "end", values=(len(self.transport_table.get_children()) + 1, transport_type, capacity, number_of_cars))
-            self.company.add_vehicle(Train(capacity, int(number_of_cars)))
-            self.save_data_to_json_vehicles(self.company.vehicles)
-
+            self.company.add_vehicle(Train(capacity, number_of_cars))
+        
+        self.save_data_to_json_vehicles(self.company.vehicles)
+        
         self.transport_window.destroy()
         self.status.config(text="Транспорт добавлен")
 
