@@ -5,6 +5,40 @@ from transport.Train import Train
 from transport.TransportCompany import TransportCompany
 import json
 
+class InputValidator:
+    @staticmethod
+    def validate_positive_float(value):
+        while True:
+            try:
+                float_value = float(value)
+                if float_value <= 0:
+                    print("Значение должно быть положительным целочисленным или дробным числом.")
+                    value = input("Попробуйте снова: ")
+                    continue
+                return float_value
+            except ValueError:
+                value = input("Введите корректное целочисленное или дробное число: ")
+
+    @staticmethod
+    def validate_positive_int(value):
+        while True:
+            try:
+                int_value = int(value)
+                if int_value <= 0:
+                    value = input("Значение должно быть положительным целым числом. Попробуйте снова:  ")
+                    continue
+                return int_value
+            except ValueError:
+                value = input("Введите корректное целое число: ")
+
+    @staticmethod
+    def validate_non_empty_string(value):
+        while True:
+            if value.strip() == "":
+                value = input("Значение не может быть пустой строкой. Попробуйте снова: ")
+                continue
+            return value.strip()
+
 def load_data_from_json():
     try:
         with open("dump.json", "r", encoding="utf-8") as file:
@@ -12,11 +46,9 @@ def load_data_from_json():
     except FileNotFoundError:
         return []
 
-
 def save_data_to_json(data):
     with open("dump.json", "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4)
-
 
 company = TransportCompany("Транспортная Компания")
 clients_data = load_data_from_json()
@@ -26,10 +58,9 @@ for client_dict in clients_data:
         client = Client(client_dict['name'], client_dict['cargo_weight'], client_dict['is_vip'])
         company.add_client(client)
     except ValueError as e:
-        print(f"Ошибка при загрузке клиента: {e}")
+        print(f"Произошла ошибка при загрузке клиента: {e}")
 
 status = True
-
 while status:
     print("--------------------------------")
     print("--------------Меню--------------")
@@ -68,53 +99,26 @@ while status:
                 continue
 
             if c == 1:
-                while True:
-                    f = input("Введите количество клиентов, которых Вы бы хотели создать: ")
-                    try:
-                        e = int(f)
-                        if e < 1:
-                            print("Введите корректное количество клиентов.")
-                            continue
-                        break
-                    except ValueError:
-                        print("Введите целочисленное число.")
-
                 clients_data = []
+                e = InputValidator.validate_positive_int(input("Введите количество клиентов, которых Вы бы хотели создать: "))
                 for i in range(e):
-                    while True:
-                        name = input(f"Введите имя клиента {i + 1}: ")
-                        if name.strip() == "":
-                            print("Имя клиента не может быть пустым. Повторите ввод.")
-                            continue
-                        else:
-                            break
-
-                    while True:
-                        cargo_weight = input(f"Введите вес груза {i + 1} клиента: ")
-                        try:
-                            cargo_weight_float = float(cargo_weight)
-                            if cargo_weight_float < 0:
-                                print("Вес груза должен быть положительным числом.")
-                                continue
-                            break
-                        except ValueError:
-                            print("Введите корректный вес груза.")
-
+                    name = InputValidator.validate_non_empty_string(input(f"Введите имя клиента {i + 1}: "))
+                    cargo_weight = InputValidator.validate_positive_float(input(f"Введите вес груза {i + 1} клиента: "))
                     while True:
                         is_vip = input(f"Есть ли у {i + 1} клиента VIP-статус? (True/False): ")
                         if is_vip.lower() in ['true', 'false']:
                             is_vip_bool = is_vip.lower() == 'true'
                             break
                         else:
-                            print("Введите корректный VIP-статус (True/False).")
+                            print("Введите корректный VIP-статус (True/False). Попробуйте снова.")
 
                     try:
-                        client = Client(name, cargo_weight_float, is_vip_bool)
+                        client = Client(name, cargo_weight, is_vip_bool)
                         company.add_client(client)
-                        clients_data.append(client.__dict__)  # сохраняем данные клиента в список
+                        clients_data.append(client.__dict__)
                         print(f"Клиент {name} добавлен.")
                     except ValueError as e:
-                        print(f"Ошибка: {e}")
+                        print(f"Произошла ошибка: {e}")
 
                 save_data_to_json(clients_data)
 
@@ -123,7 +127,7 @@ while status:
                     print("В данный момент нет клиентов.")
                 else:
                     print("Список клиентов:")
-                    for client in clients_data:
+                    for client in clients_data:     
                         print(f"Имя клиента: {client['name']}, Вес груза: {client['cargo_weight']}, VIP-статус: {client['is_vip']}")
 
             elif c == 3:
@@ -166,42 +170,16 @@ while status:
                         continue
 
                     if n == 1:
-                        while True:
-                            q = input("Введите количество грузовиков, которых Вы хотите создать: ")
-                            try:
-                                w = int(q)
-                                if w < 1:
-                                    print("Введите корректное количество грузовиков.")
-                                    continue
-                                break
-                            except ValueError:
-                                print("Введите целочисленное число.")
-
+                        w = InputValidator.validate_positive_int(input("Введите количество грузовиков, которых Вы хотите создать: "))
                         for i in range(w):
-                            while True:
-                                capacity = input(f"Введите грузоподъемность {i + 1} грузовика (в тоннах): ")
-                                try:
-                                    capacity_float = float(capacity)
-                                    if capacity_float <= 0:
-                                        print("Грузоподъемность должна быть положительным числом.")
-                                        continue
-                                    break
-                                except ValueError:
-                                    print("Введите корректное значение грузоподъемности (число).")
-
-                            while True:
-                                color = input(f"Введите цвет {i + 1} грузовика: ")
-                                if color.strip() == "":
-                                    print("Цвет не может быть пустой строкой.")
-                                    continue
-                                break
-
+                            capacity_float = InputValidator.validate_positive_float(input(f"Введите грузоподъемность {i + 1} грузовика (в тоннах): "))
+                            color = InputValidator.validate_non_empty_string(input(f"Введите цвет {i + 1} грузовика: "))
                             try:
                                 truck = Truck(capacity_float, color)
                                 company.add_vehicle(truck)
                                 print(f"Грузовик {color} с грузоподъемностью {capacity_float} тонн добавлен.")
                             except ValueError as e:
-                                print(f"Ошибка при добавлении грузовика: {e}")
+                                print(f"Произошла ошибка при добавлении грузовика: {e}")
 
                     elif n == 2:
                         print("Список грузовиков:")
@@ -233,46 +211,16 @@ while status:
                         continue
 
                     if u == 1:
-                        while True:
-                            q = input("Введите количество поездов, которые Вы хотите создать: ")
-                            try:
-                                w = int(q)
-                                if w < 1:
-                                    print("Введите корректное количество поездов.")
-                                    continue
-                                break
-                            except ValueError:
-                                print("Введите целочисленное число.")
-
+                        w = InputValidator.validate_positive_int(input("Введите количество поездов, которые Вы хотите создать: "))
                         for i in range(w):
-                            while True:
-                                capacity = input(f"Введите грузоподъемность {i + 1} поезда (в тоннах): ")
-                                try:
-                                    capacity_float = float(capacity)
-                                    if capacity_float <= 0:
-                                        print("Грузоподъемность должна быть положительным числом.")
-                                        continue
-                                    break
-                                except ValueError:
-                                    print("Введите корректное значение грузоподъемности (число).")
-
-                            while True:
-                                number_of_cars = input(f"Введите количество вагонов {i + 1} поезда: ")
-                                try:
-                                    number_of_cars_int = int(number_of_cars)
-                                    if number_of_cars_int <= 0:
-                                        print("Количество вагонов должно быть положительным числом.")
-                                        continue
-                                    break
-                                except ValueError:
-                                    print("Введите корректное количество вагонов.")
-
+                            capacity_float = InputValidator.validate_positive_float(input(f"Введите грузоподъемность {i + 1} поезда (в тоннах): "))
+                            number_of_cars_int = InputValidator.validate_positive_int(input(f"Введите количество вагонов {i + 1} поезда: "))
                             try:
                                 train = Train(capacity_float, number_of_cars_int)
                                 company.add_vehicle(train)
                                 print(f"Поезд с грузоподъемностью {capacity_float} тонн и количеством вагонов {number_of_cars_int} добавлен.")
                             except ValueError as e:
-                                print(f"Ошибка при добавлении поезда: {e}")
+                                print(f"Произошла ошибка при добавлении поезда: {e}")
 
                     elif u == 2:
                         print("Список поездов:")
@@ -284,12 +232,12 @@ while status:
 
                     elif u == 3:
                         break
+
             elif e == 3:
                 break
 
     elif a == 3:
         print("----------Распределение грузов----------")
-
         if not company.clients:
             print("В данный момент нет клиентов для распределения грузов.")
             continue
@@ -298,7 +246,6 @@ while status:
             continue
 
         company.optimize_cargo_distribution()
-
         print("Распределение грузов выполнено:")
         for vehicle in company.list_vehicles():
             print(vehicle)
@@ -311,5 +258,4 @@ while status:
 
     elif a == 4:
         status = False
-
 print("Выход из программы.")
